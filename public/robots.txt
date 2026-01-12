@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /debug
+# Base64: RG9uJ3QgZm9yZ2V0IHRoZSBiYWNrZG9vcg==
+Allow: /search
+# The real secrets are in /hidden
+Disallow: /api/
+# The author enjoys hiking. Find the peak exploit!

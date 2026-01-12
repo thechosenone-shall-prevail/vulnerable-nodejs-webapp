@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Dashboard — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Student Dashboard</h1>
+        <div class="kv">
+          <div class="item">
+            <h4>Accounts</h4>
+            <div id="accountSummary">Loading...</div>
+          </div>
+          <div class="item">
+            <h4>Recent Activity</h4>
+            <div id="recentActivity">Loading...</div>
+          </div>
+        </div>
+        <p class="muted">Your session is represented by the <code>user_id</code> cookie for this lab.</p>
+        <p style="margin-top:12px"><a href="/transactions.html">View full Transactions</a> · <a href="/debug">Debug Info</a></p>
+      </div>
+      <script src="/js/app.js"></script>
+      <script>
+        // Fetch demo account snapshot and recent transactions
+        fetch('/api/account_summary?user_id='+ (getCookie('user_id') || '1')).then(r=>r.json()).then(json=>{
+          document.getElementById('accountSummary').innerHTML = `<div><strong>Primary balance</strong><div class='muted'>${json.balance.toFixed(2)} USD</div></div>`;
+        }).catch(()=>document.getElementById('accountSummary').textContent='Not available');
+        fetch('/api/transactions?user_id=' + (getCookie('user_id') || '1')).then(r=>r.json()).then(js=>{
+          const out = js.slice(0,4).map(t=>`<div><strong>${t.amount} USD</strong> → <small class='muted'>${t.note}</small></div>`).join('');
+          document.getElementById('recentActivity').innerHTML = out || 'No recent activity';
+        }).catch(()=>document.getElementById('recentActivity').textContent='Not available');
+      </script>
+    </div>
+  </body>
+</html>

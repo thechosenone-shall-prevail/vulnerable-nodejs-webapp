@@ -1,0 +1,64 @@
+Westbridge Vulnerable Lab — Quick Exploit Guide
+=============================================
+
+Targets & Flags
+---------------
+- /files (directory listing): contains sample backup/flag. Try traversal (../) and raw fetch.
+- /debug: reveals environment details for recon and SSRF pivots.
+- /comments and /comment: stored XSS, inject <script> to steal cookies; view at /comments.
+- /search?q=: SQL injection + reflected XSS; dump data or inject HTML.
+- /profile/:id: IDOR — enumerate user IDs to pull profiles.
+- /transfer (transactions.html): client-tamperable from/to/amount, no CSRF, logic flaws; combine with IDOR data.
+- /forgot (forgot.html): host header injection; password reset renders provided Host.
+- /upload: arbitrary file write to uploads/ (no content validation); pair with /files to deliver/download shells.
+- /download.html endpoint: file download restricted to uploads directory only.
+- /audit.html: exposed training audit feed for intel.
+- Login: brute-forceable, weak creds (e.g., student1/password123).
+
+How to find/exploit quickly
+---------------------------
+1) Recon: Hit /debug and /files first; note any backups/flags and environment info.
+2) XSS: POST to /comment with <script>alert(1)</script>; view at /comments. For reflected, use /search?q=<img src=x onerror=alert(1)>.
+3) SQLi: /search?q=' OR 1=1-- to dump rows; adjust for DB flavor.
+4) IDOR: Visit /profile/1, /profile/2, etc.; harvest names/emails for further attacks.
+5) Transfer tampering: Open /transactions.html, edit hidden/visible fields (from/to/amount) in devtools and submit; no server-side checks.
+6) File upload: Use /upload with filename shell.php or payload.pdf (polyglot); access via /files/shell.php to achieve RCE for root flag.
+7) Host header: In forgot.html flow, intercept and set Host to attacker domain; reset link will point there.
+8) Brute force: Login form lacks lockout; try weak passwords from README demo creds.
+
+Notes
+-----
+- No CSRF defenses on forms; combine with XSS for session riding.
+- Images are hot-linked; swap URLs to exfil via DNS if needed.
+- Reset the environment between runs to clear noisy data.
+
+Scoring & Flags (proof = payload, steps, flag string/screenshot)
+----------------------------------------------------------------
+- Root (1): flag_root.txt → WU{root-2-shell-AcQuIrEd} via RCE/command injection only. 50 pts.
+- Public flags (1):
+  - /public/images/flag_weird.svg → FLAG{quAsI_wYrD_pUbl1c_42}. 10 pts.
+- Secrets flags (2) via command injection only (not directly web-served):
+  - /secrets/.env.bak → FLAG{eNv_bACkuP_flAG}. 10 pts.
+  - /secrets/odd_words.txt → FLAG{gIbBeRuSh_sEcReTs_11d9}. 10 pts.
+- Uploads/data flags (4):
+  - uploads/secret_backup.sql → FLAG{HiDEe_WhAt_YoU_STorE_9f2b}. 20 pts.
+  - uploads/secret_notes.txt → FLAG{n0t_a_dr1ll_b9c3}. 5 pts.
+  - uploads/student_records.csv → FLAG{LeAKeD_BroThEd_SeMEN_7a1}. 5 pts.
+  - (keep other uploaded content searchable via /files for collection)
+- App flaws (report with payload and impact; points per exploited vuln):
+  - SQLi via /search (data extraction). 15 pts.
+  - Stored XSS on /comments. 10 pts.
+  - Reflected XSS on /search. 5 pts.
+  - IDOR on /profile/:id. 10 pts.
+  - Transfer tampering on /transactions. 10 pts.
+  - Host header injection on /forgot. 10 pts.
+  - Arbitrary file upload (/upload) to web shell/polyglot. 15 pts (stack with root flag).
+- Bonus
+  - CSRF demonstration for any state-changing action. 5 pts.
+  - Creative exfil (e.g., DNS via hot-linked image). 5 pts.
+
+Reporting rules
+---------------
+- Each finding: include URL, payload, expected vs. actual, and retrieved flag (if applicable).
+- For flags: include exact flag string; screenshots optional but helpful.
+- Combined attacks (upload → traversal → root flag) can claim stacked points if clearly documented.

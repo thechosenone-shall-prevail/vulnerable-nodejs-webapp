@@ -1,0 +1,58 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Transactions — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="/images/college_logo.svg" alt="Westbridge logo">
+      <h1>Westbridge College — Student Portal</h1>
+    </header>
+    <div class="container">
+      <section class="hero card" style="background-image:url('https://source.unsplash.com/featured/?college,students,finance');background-size:cover;color:white">
+        <div class="meta">
+          <h2>Transfers & History</h2>
+          <p class="muted" style="color:rgba(255,255,255,0.9)">Perform transfers and review recent activity. Transfers intentionally lack ownership verification for training.</p>
+        </div>
+        <div class="banner"></div>
+      </section>
+      <div class="card">
+        <div style="display:flex;gap:18px;align-items:flex-start">
+          <div style="flex:1">
+            <form id="tform">
+              <div class="form-field"><label>From account ID: <input name="from" value="1"></label></div>
+              <div class="form-field"><label>To account ID: <input name="to" value="2"></label></div>
+              <div class="form-field"><label>Amount: <input name="amount" value="10"></label></div>
+              <div class="form-field"><label>Note: <input name="note" placeholder="e.g., Lunch at campus cafe"></label></div>
+              <button type="submit">Transfer</button>
+            </form>
+            <p class="muted">Note: In this training lab the server does not verify account ownership — part of the exercise is to discover and exploit the logic flaw.</p>
+          </div>
+          <div style="width:420px">
+            <h3>Recent transactions</h3>
+            <div id="trlist">Loading...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/app.js"></script>
+    <script>
+      document.getElementById('tform').addEventListener('submit', e=>{
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        fetch('/transfer', {method:'POST', body: new URLSearchParams(fd)}).then(r=>r.text()).then(t=>{
+          alert('Server response: '+t);
+          loadList();
+        });
+      });
+      function loadList(){
+        fetch('/api/transactions').then(r=>r.json()).then(js=>{
+          document.getElementById('trlist').innerHTML = js.slice(0,12).map(t=>`<div style='padding:8px;border-bottom:1px solid #f6eaea'><strong>${t.amount} USD</strong><div class='muted'>${t.note} — ${t.timestamp}</div></div>`).join('');
+        });
+      }
+      loadList();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Search (reflected/Sqli)</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <h1>Product Search</h1>
+    <form method="GET" action="/search">
+      <input name="q" placeholder="search term">
+      <button type="submit">Search</button>
+    </form>
+    <div id="results"></div>
+    <script>
+      // fetch results and inject raw HTML into page (demonstrates reflected XSS if server reflects q unsafely)
+      const params = new URLSearchParams(location.search);
+      if (params.has('q')) {
+        fetch('/search?' + params.toString())
+          .then(r => r.text())
+          .then(html => document.getElementById('results').innerHTML = html);
+      }
+    </script>
+  </body>
+</html>

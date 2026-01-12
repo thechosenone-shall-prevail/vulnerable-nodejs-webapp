@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Faculty & Staff - Westbridge University</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-top">
+        <img class="logo" src="/images/college_logo.svg" alt="Westbridge Logo">
+        <h1>Westbridge University</h1>
+      </div>
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/about.html">About</a>
+        <a href="/courses.html">Academics</a>
+        <a href="/admissions.html">Admissions</a>
+        <a href="/contact.html">Contact</a>
+      </nav>
+    </header>
+    <div class="container">
+      <div class="card">
+        <h1>Student Profile Lookup</h1>
+        <form id="f">
+          <label>User ID: <input id="uid" value="1"></label>
+          <button type="submit">Get Profile</button>
+        </form>
+        <div id="out" class="profile-card"></div>
+      </div>
+    </div>
+    <script>
+      function renderProfile(p){
+        const out = document.getElementById('out');
+        const faces = [
+          'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          'https://images.unsplash.com/photo-1494790108755-2616b612b786?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80',
+          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?ixlib=rb-4.0.3&auto=format&fit=crop&w=200&q=80'
+        ];
+        const photo = faces[p.id % faces.length];
+        out.innerHTML = `<img src='${photo}' alt='avatar' style='width:88px;height:88px;border-radius:50%;background:#efefef;padding:8px;'><div><strong>${p.full_name || p.username}</strong><div class='muted'>${p.major || ''} • Year ${p.year || 'N/A'}</div><div class='muted'>${p.email || ''}</div></div>`;
+      }
+      document.getElementById('f').addEventListener('submit', e => {
+        e.preventDefault();
+        const id = document.getElementById('uid').value;
+        fetch('/profile/' + encodeURIComponent(id)).then(r => r.json()).then(j => renderProfile(j)).catch(()=>document.getElementById('out').textContent='Not found');
+      });
+    </script>
+    <footer class="footer">
+      <p>&copy; 2023 Westbridge University. All rights reserved.</p>
+      <p>Address: 123 University Drive, Westbridge City, WC 12345</p>
+    </footer>
+  </body>
+</html>

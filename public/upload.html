@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Upload — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Upload a file (training)</h1>
+        
+        <form id="u">
+          <div class="form-field">
+            <label>Filename:
+              <input name="filename" value="your file name" placeholder="report.pdf">
+            </label>
+          </div>
+          <div class="form-field">
+            <label>Content:
+              <textarea name="content" rows="6" placeholder="Paste payload or base64 here"></textarea>
+            </label>
+          </div>
+          <div class="form-field">
+            <label>Content-Type (optional):
+              <input name="ctype" value="application/pdf" placeholder="image/png or application/pdf">
+            </label>
+          </div>
+          <button type="submit" class="btn-primary">Upload (no checks)</button>
+        </form>
+  
+    <script>
+      document.getElementById('u').addEventListener('submit', e=>{
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        const payload = {
+          filename: fd.get('filename'),
+          content: fd.get('content'),
+          ctype: fd.get('ctype')
+        };
+        fetch('/upload',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)}).then(r=>r.text()).then(t=>alert(t));
+      });
+    </script>
+  </body>
+</html>

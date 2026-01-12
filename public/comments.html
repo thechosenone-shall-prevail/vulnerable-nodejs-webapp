@@ -1,0 +1,29 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Campus Board — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <header class="header">
+      <img class="logo" src="/images/college_logo.svg" alt="Westbridge logo">
+      <h1>Westbridge College — Student Portal</h1>
+    </header>
+    <div class="container">
+      <div class="card">
+        <h1>Campus Board</h1>
+        <form method="POST" action="/comment">
+          <div class="form-field"><label>Name: <input name="username"></label></div>
+          <div class="form-field"><label>Message: <textarea name="message"></textarea></label></div>
+          <button type="submit">Post</button>
+        </form>
+        <hr>
+        <div id="board">Loading…</div>
+      </div>
+    </div>
+    <script>
+      fetch('/comments').then(r => r.text()).then(html => document.getElementById('board').innerHTML = html);
+    </script>
+  </body>
+</html>

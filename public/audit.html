@@ -1,0 +1,22 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Audit Log — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card">
+        <h1>Audit Log</h1>
+        <p class="muted">(For training only — this log is exposed intentionally.)</p>
+        <div id="audit">Loading…</div>
+      </div>
+    </div>
+    <script>
+      fetch('/api/audit').then(r=>r.json()).then(a => {
+        document.getElementById('audit').innerHTML = a.map(e=>`<div style='padding:8px;border-bottom:1px solid #eef2f6'><strong>${e.event}</strong><div class='muted'>${e.detail}</div></div>`).join('');
+      });
+    </script>
+  </body>
+</html>

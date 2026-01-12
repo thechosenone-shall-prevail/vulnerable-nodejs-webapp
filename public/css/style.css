@@ -1,0 +1,69 @@
+/* Base64: TG9vayBhdCB0aGUgc2VydmVyIGZvciBoaWRkZW4gZmxhZ3M= */
+/* The colors are random, no secrets here. Or are they? */
+/* The author loves puzzles. Solve this one for a surprise! */
+/* Hidden? QkxBR3tiYXNlNjRfY29tbWVudF82OGYyfQ== */
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap');
+:root{--bg:#fcfbfa;--nav:#0a1f3f;--accent:#FFD700;--muted:#5f6470;--card:#ffffff;--accent-2:#1558c0}
+*{box-sizing:border-box}
+body{font-family:'IBM Plex Sans','Segoe UI',system-ui,-apple-system,Roboto,'Helvetica Neue',Arial; background:linear-gradient(180deg,#fcfcfe,var(--bg)); color:#061226; margin:0}
+.header{background:linear-gradient(90deg,var(--nav),#004080);color:white;padding:18px 24px;text-align:center}
+.header-top{display:flex;justify-content:center;align-items:center;gap:16px}
+.header img.logo{height:52px}
+.header h1{font-size:20px;margin:0;font-weight:700}
+.main-nav{display:flex;justify-content:center;gap:20px;margin-top:10px}
+.main-nav a{color:white;text-decoration:none;font-weight:600;padding:8px 12px;border-radius:6px;transition:background 0.3s}
+.main-nav a:hover{background:rgba(255,255,255,0.2)}
+.container{max-width:1100px;margin:28px auto;padding:0 20px}
+nav.main{margin-top:12px}
+nav.main a{color:var(--nav);margin-right:14px;text-decoration:none;font-weight:600;padding:6px 8px;border-radius:6px}
+.hero{background:linear-gradient(180deg, rgba(255,255,255,0.95), rgba(255,255,255,0.9));padding:24px;border-radius:12px;display:flex;align-items:center;gap:22px}
+.hero img{border-radius:8px}
+.card{background:var(--card);border-radius:10px;padding:20px;box-shadow:0 8px 30px rgba(6,18,40,0.06);margin-top:18px}
+.btn-primary{background:var(--accent);color:#003366;border:none;padding:12px 20px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block}
+.btn-primary:hover{background:#FFC107}
+.news-item{margin-bottom:16px}
+.news-item h4{margin:0 0 8px 0;color:var(--nav)}
+.alerts .ticker{display:flex;align-items:center;gap:10px;background:#f8fafc;border:1px solid #eef2f6;padding:10px;border-radius:8px;margin-bottom:10px}
+.pill{display:inline-block;padding:6px 10px;border-radius:999px;font-weight:700;font-size:12px;color:white}
+.pill-warning{background:#f59e0b}
+.pill-info{background:#2563eb}
+.pill-danger{background:#dc2626}
+.placements .section-head,
+.events .section-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.text-link{color:var(--accent-2);font-weight:700;text-decoration:none}
+.text-link:hover{text-decoration:underline}
+.metrics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.metric-card{background:#f8fafc;border:1px solid #eef2f6;border-radius:10px;padding:14px;text-align:center}
+.metric-value{font-size:24px;font-weight:800;color:var(--nav)}
+.metric-label{color:var(--muted);font-size:13px}
+.recruiters{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.chip{background:#eef6ff;color:#0f3b82;padding:8px 12px;border-radius:999px;font-weight:700;font-size:13px;border:1px solid #d8e7ff}
+.events-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.event-card{display:flex;align-items:center;gap:14px;border:1px solid #eef2f6;border-radius:10px;padding:12px;background:#fdfdfd}
+.event-date{width:52px;text-align:center;border-radius:10px;background:#003366;color:white;padding:8px 6px;font-weight:800;line-height:1.1}
+.event-date .day{display:block;font-size:18px}
+.event-date .month{text-transform:uppercase;font-size:11px;letter-spacing:1px}
+.services-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.service-card{border:1px solid #eef2f6;border-radius:10px;padding:14px;background:#f8fafc}
+.links{display:flex;flex-wrap:wrap;gap:10px}
+.links a{color:var(--accent-2);text-decoration:none;padding:8px 12px;border:1px solid #e6eef7;border-radius:6px}
+.links a:hover{background:#f0f8ff}
+.programs-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.program-card{background:#f9f9f9;padding:20px;border-radius:8px;box-shadow:0 2px 10px rgba(0,0,0,0.1)}
+.footer{background:var(--nav);color:white;padding:20px;text-align:center;margin-top:40px}
+.footer p{margin:5px 0}
+.form-field{margin-bottom:14px}
+label{display:block;font-weight:600;margin-bottom:6px}
+input[type=text],input[type=password],textarea,select{width:100%;padding:10px;border:1px solid #e6eef7;border-radius:8px;background:#fff}
+button{background:var(--accent);color:#081426;border:none;padding:11px 16px;border-radius:8px;cursor:pointer;font-weight:700}
+button.secondary{background:transparent;color:var(--accent-2);border:1px solid #e6eef7}
+.muted{color:var(--muted);font-size:13px;margin-top:10px}
+.profile-card{display:flex;gap:16px;align-items:center}
+.profile-card img{width:88px;height:88px;border-radius:50%;background:#efefef;padding:8px}
+.kv{display:flex;gap:14px}
+.kv .item{flex:1;background:#f8fafc;padding:12px;border-radius:8px;border:1px solid #f1f5f9}
+.table{width:100%;border-collapse:collapse}
+.table th,.table td{padding:10px;border-bottom:1px solid #eef2f6;text-align:left}
+.badge{display:inline-block;padding:6px 8px;border-radius:6px;background:#effbf8;color:#04664b;font-weight:700}
+small.note{display:block;color:#7b8691;margin-top:8px}
+@media (max-width:800px){.hero{flex-direction:column;align-items:flex-start}.kv{flex-direction:column}.header-top{flex-direction:column;gap:10px}.main-nav{flex-direction:column;gap:10px}.header{padding:14px}}

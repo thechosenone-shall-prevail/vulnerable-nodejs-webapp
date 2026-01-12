@@ -1,0 +1,95 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Forgot password — Westbridge</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="icon" type="image/svg+xml" href="/images/w-favicon.svg">
+  </head>
+  <body>
+    <header class="header">
+      <div class="header-top">
+        <img class="logo" src="/images/college_logo.svg" alt="Westbridge logo">
+        <h1>Westbridge University — Self-Service Desk</h1>
+      </div>
+      <nav class="main-nav">
+        <a href="/">Home</a>
+        <a href="/library.html">Library</a>
+        <a href="/labs.html">Labs</a>
+        <a href="/housing.html">Housing</a>
+        <a href="/payments.html">Payments</a>
+        <a href="/contact.html">Support</a>
+      </nav>
+    </header>
+    <div class="container">
+      <div class="card">
+        <h1>Password & Access Recovery</h1>
+        <p class="muted">Choose a recovery route. Only <code>@westbridge.edu</code> and <code>@students.wu.edu</code> emails get automatic links; others queue for manual review.</p>
+        <form id="f">
+          <div class="form-field">
+            <label>Campus email
+              <input name="email" value="mchen@westbridge.edu" placeholder="name@westbridge.edu">
+            </label>
+          </div>
+          <div class="form-field">
+            <label>Recovery type</label>
+            <div class="links">
+              <label><input type="radio" name="flow" value="email" checked> Email link</label>
+              <label><input type="radio" name="flow" value="sms"> SMS code</label>
+              <label><input type="radio" name="flow" value="security"> Security Q/A</label>
+            </div>
+          </div>
+          <div class="form-field">
+            <label>Previous device
+              <select name="device">
+                <option>— Select a remembered device —</option>
+                <option>Library-Kiosk-02</option>
+                <option>Housing-Lounge-AppleTV</option>
+                <option>Macbook-Pro-IT-Imaged</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-field">
+            <label>Account type
+              <select name="acct">
+                <option>Student (default)</option>
+                <option>Faculty/Adjunct</option>
+                <option>Staff / Bursar</option>
+                <option>Library Desk</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-field">
+            <label>Notes for approver (optional)
+              <textarea name="note" rows="3" placeholder="Ex: lost ID in lab, need badge reset + Wi-Fi"></textarea>
+            </label>
+          </div>
+          <button type="submit" class="btn-primary">Send reset / create ticket</button>
+          <p class="muted">Non-campus emails: ticket is generated but link will not be sent automatically. Check the audit feed for status.</p>
+        </form>
+        <div class="card" style="margin-top:12px">
+          <h3>Need something else?</h3>
+          <div class="links">
+            <a href="/library.html">Library holds</a>
+            <a href="/payments.html">Fee waiver request</a>
+            <a href="/housing.html">Room access issue</a>
+            <a href="/labs.html">Lab badge sync</a>
+            <a href="/audit.html">View audit feed</a>
+          </div>
+        </div>
+        <div id="res" class="card small" style="margin-top:12px">Reset link or ticket status will appear here.</div>
+      </div>
+    </div>
+    <script>
+      document.getElementById('f').addEventListener('submit', e=>{
+        e.preventDefault();
+        const fd = new FormData(e.target);
+        fetch('/forgot', {method:'POST', body: new URLSearchParams(fd)}).then(r=>r.text()).then(t=>{
+          const email = fd.get('email') || '';
+          const allowed = email.endsWith('@westbridge.edu') || email.endsWith('@students.wu.edu');
+          document.getElementById('res').innerHTML = allowed ? t : 'Ticket created for manual review. Automated links are only sent to campus domains.';
+        });
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Student Login</title>
+    <link rel="stylesheet" href="/css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <div class="container">
+      <div class="card" style="max-width:480px;margin:30px auto;">
+        <img src="/images/college_logo.svg" style="height:42px;margin-bottom:10px">
+        <h1>Student Login</h1>
+        <p class="muted">Sign in to access your Westbridge student portal (training environment).</p>
+        <form method="POST" action="/login" id="loginForm">
+          <div class="form-field"><label>Username: <input name="username" type="text" placeholder="e.g. mchen"></label></div>
+          <div class="form-field"><label>Password: <input name="password" type="password" placeholder="••••••"></label></div>
+          <div style="display:flex;gap:10px;align-items:center"><button type="submit">Sign in</button><button class="secondary" onclick="location.href='/index.html';return false">Back</button></div>
+        </form>
+      </div>
+    </div>
+  </body>
+</html>

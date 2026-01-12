@@ -1,0 +1,21 @@
+FLAG_ROOT: WU{root-2-shell-AcQuIrEd}
+Note: Intended to be read only via RCE (e.g., uploaded shell) or traversal if you reach the filesystem root of the app.
+note from the author : Things you owe, end up owing you back.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+final note from the author : this brain melting session, this knowledge, this constant GPT iterations is what builds you, use your precious time purely for gaining persistent knowledge :)
