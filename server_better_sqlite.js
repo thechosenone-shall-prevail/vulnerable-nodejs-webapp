@@ -5,26 +5,28 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cookieParser = require('cookie-parser');
-const sqlite3 = require('sqlite3').verbose();
+const Database = require('better-sqlite3');
 const fs = require('fs');
 const path = require('path');
 
 // This app runs on Node.js, but can you make it run your commands?
 // The admin password is hidden in plain sight. Or is it?
-// The author has a secret crush on Emily from the coffee shop. If you fully root this system, he'll finally ask her out!
+// The author has a secret crush on a girl from 2-C IT. If you fully root this system, he'll finally ask her out!
 // The author once hacked a vending machine for free snacks.
 // Why did the developer go broke? Because he used up all his cache!
 
 const DB_FILE = path.join(__dirname, 'data.db');
 let dbExists = fs.existsSync(DB_FILE);
-const db = new sqlite3.Database(DB_FILE);
+const db = new Database(DB_FILE);
 
 if (!dbExists) {
   const initSql = fs.readFileSync(path.join(__dirname, 'init_db.sql'), 'utf8');
-  db.exec(initSql, (err) => {
-    if (err) console.error('DB init error:', err);
-    else console.log('Database initialized');
-  });
+  try {
+    db.exec(initSql);
+    console.log('Database initialized');
+  } catch (err) {
+    console.error('DB init error:', err);
+  }
 }
 
 const app = express();
@@ -42,84 +44,98 @@ function audit(msg){
 // Simple login: no rate-limit, predictable session cookie
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
-  db.get(`SELECT id, password FROM users WHERE username = '${username}'`, (err, row) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const row = db.prepare(`SELECT id, password FROM users WHERE username = '${username}'`).get();
     if (row && row.password === password) {
       res.cookie('user_id', row.id, { httpOnly: false }); // deliberately not secure
       return res.redirect('/dashboard.html');
     }
     res.status(401).send('Invalid credentials');
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 // IDOR: no auth check on profile access (returns extended profile fields)
 app.get('/profile/:id', (req, res) => {
   const id = req.params.id;
-  db.get(`SELECT id, username, email, full_name, major, year FROM users WHERE id = ${id}`, (err, row) => {
-    if (err) return res.status(500).send('Error');
+  try {
+    const row = db.prepare(`SELECT id, username, email, full_name, major, year FROM users WHERE id = ${id}`).get();
     if (!row) return res.status(404).send('Not found');
     res.json(row);
-  });
+  } catch (err) {
+    res.status(500).send('Error');
+  }
 });
 
 // Search: vulnerable to SQL injection (unsafe string concatenation)
-// Base64: U1FMLSBZb3UgY2FuIGR1bXAgdGhlIHVzZXJzIHdpdGggVU5JT04h
+// Base64: U1FMLCBZb3UgY2FuIGR1bXAgdGhlIHVzZXJzIHdpdGggVU5JT04h
 // Is that true? Or just a wild goose chase?
 // Out of context: The author once built a robot that could dance. If you find the ultimate exploit, he'll show you the video!
 // Random cool: This code is like a puzzle. Each comment is a piece. Assemble them for glory!
 app.get('/search', (req, res) => {
   const q = req.query.q || '';
   const sql = `SELECT id, name, description FROM products WHERE name LIKE '%${q}%'`;
-  db.all(sql, (err, rows) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const rows = db.prepare(sql).all();
     // Reflected search query is included unsanitized (reflected XSS vector)
     let html = `<h1>Search results for: ${q}</h1><ul>`;
     rows.forEach(r => html += `<li>${r.name}: ${r.description}</li>`);
     html += `</ul>`;
     res.send(html);
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 // Comments: stored XSS (messages are stored raw and rendered later)
 app.post('/comment', (req, res) => {
   const { username, message } = req.body;
-  db.run(`INSERT INTO comments (username, message) VALUES ('${username}', '${message}')`, function(err) {
-    if (err) return res.status(500).send('DB error');
+  try {
+    db.prepare(`INSERT INTO comments (username, message) VALUES ('${username}', '${message}')`).run();
     res.redirect('/comments.html');
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 app.get('/comments', (req, res) => {
-  db.all('SELECT username, message FROM comments ORDER BY id DESC LIMIT 50', (err, rows) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const rows = db.prepare('SELECT username, message FROM comments ORDER BY id DESC LIMIT 50').all();
     let html = '<h1>Comments</h1><ul>';
     rows.forEach(r => html += `<li><strong>${r.username}</strong>: ${r.message}</li>`); // no escaping
     html += '</ul>';
     res.send(html);
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 // Insecure transaction endpoint: client can tamper with from/to/amount
 app.post('/transfer', (req, res) => {
   const { from, to, amount, note } = req.body;
   // No authentication/authorization check here — intentional logic flaw for training
-  rialize(() => {
-    db.get(`SELECT id, balance FROM accounts WHERE id = ${from}`, (err, rowFrom) => {
-      if (err || !rowFrom) return res.status(400).send('Invalid from account');
-      db.get(`SELECT id, balance FROM accounts WHERE id = ${to}`, (err2, rowTo) => {
-        if (err2 || !rowTo) return res.status(400).send('Invalid to account');
-        const amt = Number(amount) || 0;
-        const newFrom = rowFrom.balance - amt;
-        const newTo = rowTo.balance + amt;
-        db.run(`UPDATE accounts SET balance = ${newFrom} WHERE id = ${from}`);
-        db.run(`UPDATE accounts SET balance = ${newTo} WHERE id = ${to}`);
-        // record transaction for audit/history
-        const ts = new Date().toISOString();
-        db.run(`INSERT INTO transactions (from_account, to_account, amount, timestamp, note) VALUES (${from}, ${to}, ${amt}, '${ts}', '${note || ''}')`);
-        res.send('Transfer complete');
-      });
-    });
-  });
+  try {
+    const rowFrom = db.prepare(`SELECT id, balance FROM accounts WHERE id = ${from}`).get();
+    if (!rowFrom) return res.status(400).send('Invalid from account');
+    
+    const rowTo = db.prepare(`SELECT id, balance FROM accounts WHERE id = ${to}`).get();
+    if (!rowTo) return res.status(400).send('Invalid to account');
+    
+    const amt = Number(amount) || 0;
+    const newFrom = rowFrom.balance - amt;
+    const newTo = rowTo.balance + amt;
+    
+    db.prepare(`UPDATE accounts SET balance = ${newFrom} WHERE id = ${from}`).run();
+    db.prepare(`UPDATE accounts SET balance = ${newTo} WHERE id = ${to}`).run();
+    
+    // record transaction for audit/history
+    const ts = new Date().toISOString();
+    db.prepare(`INSERT INTO transactions (from_account, to_account, amount, timestamp, note) VALUES (${from}, ${to}, ${amt}, '${ts}', '${note || ''}')`).run();
+    res.send('Transfer complete');
+  } catch (err) {
+    res.status(500).send('Error');
+  }
 });
 
 // Transactions API and audit
@@ -130,31 +146,36 @@ app.get('/api/transactions', (req, res) => {
     // show transactions related to accounts with that user id (simple join)
     sql = `SELECT t.id, t.from_account, t.to_account, t.amount, t.timestamp, t.note FROM transactions t JOIN accounts a ON (a.id = t.from_account OR a.id = t.to_account) WHERE a.user_id = ${userId} ORDER BY t.id DESC LIMIT 200`;
   }
-  db.all(sql, (err, rows) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const rows = db.prepare(sql).all();
     res.json(rows);
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 app.get('/api/account_summary', (req, res) => {
   const userId = req.query.user_id || 1;
-  db.get(`SELECT a.id, a.balance FROM accounts a WHERE a.user_id = ${userId} LIMIT 1`, (err, row) => {
-    if (err || !row) return res.status(404).json({error:'No account'});
+  try {
+    const row = db.prepare(`SELECT a.id, a.balance FROM accounts a WHERE a.user_id = ${userId} LIMIT 1`).get();
+    if (!row) return res.status(404).json({error:'No account'});
     res.json({id: row.id, balance: row.balance});
-  });
+  } catch (err) {
+    res.status(500).send('Error');
+  }
 });
 
 // Exposed audit API for training (contains hints)
 app.get('/api/audit', (req, res) => {
   // intentionally expose a small audit feed for training — contains a sample hint
   const feed = [
-    {event:'Backup found', detail:'uploads/secret_backup.sql contains a note (FLAG{hidden_backup_file_found})'},
+    {event:'Backup found', detail:'uploads/secret_backup.sql contains a note (FLAG{HiDEe_WhAt_YoU_STorE_9f2b})'},
     {event:'DB seed', detail:'Weak credentials seeded for users: mchen, spatel, dkim'},
   ];
   res.json(feed);
 });
 
-// Audit fedb.seed (read latest lines from the audit log)
+// Audit feed (read latest lines from the audit log)
 app.get('/audit', (req, res) => {
   fs.readFile(path.join(__dirname,'audit.log'), 'utf8', (err, data) => {
     if (err) return res.status(200).send('<h1>No audit log yet</h1>');
@@ -267,13 +288,15 @@ app.get('/dashboard.html', (req, res) => {
 app.get('/admin', (req, res) => {
   const userId = req.cookies.user_id;
   if (!userId) return res.status(403).send('Access denied');
-  db.all('SELECT id, username, email, full_name FROM users', (err, rows) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const rows = db.prepare('SELECT id, username, email, full_name FROM users').all();
     let html = '<h1>Admin Panel - User Management</h1><table><tr><th>ID</th><th>Username</th><th>Email</th><th>Full Name</th></tr>';
     rows.forEach(r => html += `<tr><td>${r.id}</td><td>${r.username}</td><td>${r.email}</td><td>${r.full_name}</td></tr>`);
     html += '</table>';
     res.send(html);
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 // Local File Inclusion (LFI)
@@ -313,14 +336,16 @@ app.post('/login', (req, res) => {
     res.cookie('user_id', 99, { httpOnly: false });
     return res.redirect('/admin');
   }
-  db.get(`SELECT id, password FROM users WHERE username = '${username}'`, (err, row) => {
-    if (err) return res.status(500).send('DB error');
+  try {
+    const row = db.prepare(`SELECT id, password FROM users WHERE username = '${username}'`).get();
     if (row && row.password === password) {
       res.cookie('user_id', row.id, { httpOnly: false });
       return res.redirect('/dashboard.html');
     }
     res.status(401).send('Invalid credentials');
-  });
+  } catch (err) {
+    res.status(500).send('DB error');
+  }
 });
 
 const PORT = process.env.PORT || 3000;
