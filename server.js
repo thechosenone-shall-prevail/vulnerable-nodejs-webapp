@@ -33,6 +33,9 @@ app.use(bodyParser.json());
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// serve uploaded files statically so attackers can access webshells
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // Lightweight audit logger (appends to audit.log) — intentionally verbose for training
 function audit(msg){
   const entry = `${new Date().toISOString()} ${msg}\n`;
@@ -171,6 +174,9 @@ app.get('/audit', (req, res) => {
   });
 });
 
+// serve uploaded files statically so attackers can access webshells
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
 // File download (restricted to uploads directory)
 app.get('/download', (req, res) => {
   const name = req.query.name || '';
@@ -184,6 +190,17 @@ app.get('/download', (req, res) => {
   fs.readFile(target, (err, data) => {
     if (err) return res.status(404).send('File not found');
     res.set('Content-Type', 'application/octet-stream');
+    res.send(data);
+  });
+});
+
+// direct read-and-serve route for uploaded files (also insecure)
+app.get('/uploads/:filename', (req, res) => {
+  const file = req.params.filename;
+  // no path sanitization, allows traversal to read arbitrary files
+  const target = path.join(__dirname, 'uploads', file);
+  fs.readFile(target, (err, data) => {
+    if (err) return res.status(404).send('File not found');
     res.send(data);
   });
 });
@@ -214,7 +231,8 @@ app.get('/fetch', (req, res) => {
 app.post('/upload', (req, res) => {
   const { filename, content } = req.body;
   if (!filename || !content) return res.status(400).send('Missing fields');
-  const target = path.join(__dirname, 'uploads', path.basename(filename));
+  // no sanitization - attacker can traverse directories
+  const target = path.join(__dirname, 'uploads', filename);
   fs.writeFile(target, content, (err) => {
     if (err) return res.status(500).send('Write failed');
     audit(`uploaded: ${filename} from ${req.ip}`);
