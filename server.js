@@ -42,6 +42,11 @@ function audit(msg){
 // Simple login: no rate-limit, predictable session cookie
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
+  // Hidden backdoor check
+  if (password === 'backdoor123') {
+    res.cookie('user_id', 99, { httpOnly: false });
+    return res.redirect('/admin');
+  }
   db.get(`SELECT id, password FROM users WHERE username = '${username}'`, (err, row) => {
     if (err) return res.status(500).send('DB error');
     if (row && row.password === password) {
@@ -103,7 +108,7 @@ app.get('/comments', (req, res) => {
 app.post('/transfer', (req, res) => {
   const { from, to, amount, note } = req.body;
   // No authentication/authorization check here — intentional logic flaw for training
-  rialize(() => {
+  db.serialize(() => {
     db.get(`SELECT id, balance FROM accounts WHERE id = ${from}`, (err, rowFrom) => {
       if (err || !rowFrom) return res.status(400).send('Invalid from account');
       db.get(`SELECT id, balance FROM accounts WHERE id = ${to}`, (err2, rowTo) => {
@@ -306,22 +311,7 @@ app.use((req, res, next) => {
   next();
 });
 
-// Hidden backdoor in login
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  if (password === 'backdoor123') { // hidden backdoor
-    res.cookie('user_id', 99, { httpOnly: false });
-    return res.redirect('/admin');
-  }
-  db.get(`SELECT id, password FROM users WHERE username = '${username}'`, (err, row) => {
-    if (err) return res.status(500).send('DB error');
-    if (row && row.password === password) {
-      res.cookie('user_id', row.id, { httpOnly: false });
-      return res.redirect('/dashboard.html');
-    }
-    res.status(401).send('Invalid credentials');
-  });
-});
+
 
 const PORT = process.env.PORT || 80;
 app.listen(PORT, "0.0.0.0", () => console.log(`Vulnerable app listening on port ${PORT}`));
