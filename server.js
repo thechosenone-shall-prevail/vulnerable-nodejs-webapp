@@ -212,20 +212,8 @@ app.get('/redirect', (req, res) => {
   return res.redirect(to);
 });
 
-// SSRF-like endpoint: fetches a remote URL using curl (vulnerable to command injection)
-app.get('/fetch', (req, res) => {
-  const u = req.query.url;
-  if (!u) return res.status(400).send('Missing url param');
-  audit(`remote fetch: ${u} initiated from ${req.ip}`);
-  const { exec } = require('child_process');
-  exec(`curl -s ${u}`, (error, stdout, stderr) => {
-    if (error) {
-      res.send(`Error: ${error.message}`);
-      return;
-    }
-    res.send(`<pre>${stdout.slice(0,4000)}</pre>`);
-  });
-});
+// /fetch endpoint removed to limit RCE vectors (use /ping for command injection)
+
 
 // Simple upload endpoint (accepts JSON {filename, content})
 app.post('/upload', (req, res) => {
@@ -308,17 +296,8 @@ app.get('/include', (req, res) => {
   });
 });
 
-// Code Injection (eval)
-app.post('/run', (req, res) => {
-  const code = req.body.code;
-  if (!code) return res.status(400).send('Missing code');
-  try {
-    const result = eval(code);
-    res.send(`Result: ${result}`);
-  } catch (e) {
-    res.send(`Error: ${e.message}`);
-  }
-});
+// /run route removed to prevent full eval-based RCE: use /ping for controlled command injection
+
 
 // Rate limiting bypass (fake rate limit)
 let requestCount = 0;
